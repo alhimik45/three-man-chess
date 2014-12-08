@@ -1,12 +1,8 @@
-# three-man-chess
+# Three-man chess
 
-A Hoplon project with Castra designed to...well, that part is up to you.
+A multiplayer app using clojure framework [Hoplon][1]
 
-## Dependencies
-
-- java 1.7+
-- [boot][1]
-- [leiningen][2]
+Running example: [https://three-man-chess.herokuapp.com/][3]
 
 ## Usage
 
@@ -16,16 +12,12 @@ A Hoplon project with Castra designed to...well, that part is up to you.
     $ boot development
     ```
 
-2. Go to [http://localhost:8000][3] in your browser. You should see "Hello,
-Hoplon and Castra!" with random numbers that are generated on the server and
-transmited to the client. But you should change that to what you want.
+2. Go to [http://localhost:8000][2] in your browser.
 
-3. You're already done.
+3. Enjoy!
 
-## License
+Copyright © 2014, **Alexey Kolpakov**
 
-Copyright © 2014, **Your Name Goes Here**
-
-[1]: https://github.com/tailrecursion/boot
-[2]: https://github.com/technomancy/leiningen
-[3]: http://localhost:8000
+[1]: http://hoplon.io/
+[2]: http://localhost:8000
+[3]: https://three-man-chess.herokuapp.com/
