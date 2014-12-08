@@ -1,0 +1,1 @@
+../../cljs/three_man_chess/move.cljs

@@ -1,0 +1,44 @@
+(page "game.html"
+      (:require [cljs.core.match]
+                [three-man-chess.board :as board]
+                [three-man-chess.rpc :as rpc]
+                [three-man-chess.page :as page])
+      (:require-macros [cljs.core.match.macros :refer [match]]))
+
+(defn init-game [game-id player-id]
+  (add-initfn! board/init-board)
+  (board/add-to-move-cell-listeners! #(rpc/move game-id player-id %))
+  (rpc/game-loop game-id player-id  ;ids
+                 board/pos-atom board/last-move-atom  ;atoms with cells
+                 board/turn board/available-players board/me))  ;atoms
+
+(match
+ [page/params]
+ [[game-id "player" player-id]] (init-game game-id player-id)
+ :else (page/redirect! ""))
+
+(defn text-player [player-num]
+  (case player-num
+    0 "white"
+    1 "black"
+    2 "red"
+    "spectator"))
+
+(defc= player-turn-name (text-player (:turn rpc/state)))
+(defc= my-name (text-player (:num rpc/state)))
+
+(html
+ (head)
+ (body
+  (p
+   "Scale:"
+   (input :type 'range
+          :id 'scale
+          :min 100
+          :max 500
+          :value 300
+          :on-input #(board/change-scale! (int (val-id 'scale)))))
+  (h4 (text "Turn now: ~{player-turn-name}. You are ~{my-name}"))
+  (canvas :id "canvas"
+          :width "800"
+          :height "800")))

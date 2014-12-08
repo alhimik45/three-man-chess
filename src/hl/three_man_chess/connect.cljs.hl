@@ -1,0 +1,15 @@
+(page "connect.html"
+      (:require [cljs.core.match]
+                [three-man-chess.rpc :as rpc]
+                [three-man-chess.page :as page])
+      (:require-macros [cljs.core.match.macros :refer [match]]))
+
+(defn connect [game-id]
+  (rpc/connect-to-game game-id)
+  (cell= (when (and rpc/player-id rpc/match-id)
+           (page/redirect! "game.html" rpc/match-id "player" rpc/player-id))))
+(match
+ [page/params]
+ [[game-id]] (connect game-id)
+ :else (page/redirect! ""))
+

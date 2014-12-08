@@ -1,0 +1,32 @@
+(page "index.html"
+      (:require [three-man-chess.rpc :as rpc])
+      (:require-macros [cljs.core.match.macros :refer [match]]))
+
+(html
+ (head)
+ (body
+  (pre
+   "Rules:
+   Moves like in normal chess
+   Sequense of moves: white -> black -> red -> white -> ...
+   You can capture enemy king!
+   If you captured enemy king, owner of its king loses and rest of his pieces pass under your control
+   Some pawns of captured player will change direction to be directed to remained enemy
+   Pawns haven't promotion
+   Goal: capture all enemy kings")
+  (button
+  ; :toggle (cell= (nil? rpc/match-id))
+   :on-click (fn [_] (rpc/new-game))
+   "New game")
+  (div
+   :toggle rpc/match-id
+   (p "Share link to new game:")
+   (let [url-cell (cell= (str (.-protocol js/location) "//"
+                              (.-host js/location) "/connect.html#/"
+                              rpc/match-id))]
+     (div
+      (a :href url-cell
+         "Link")
+      (p "Copy it:")
+      (input :value url-cell)))
+   (p "First 3 users will be play, others will view"))))

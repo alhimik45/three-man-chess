@@ -1,0 +1,1 @@
+web: java $JVM_OPTS -cp target/3chess-standalone.jar clojure.main -m three-man-chess.core $PORT
