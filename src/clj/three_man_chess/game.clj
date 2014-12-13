@@ -58,3 +58,10 @@
                                              turn))
                               (count avail-players)))]
     (assoc game-data :turn next-player)))
+
+(defn player-move [game-data from to]
+  (-> game-data
+      (check-king-captured from to)
+      (next-turn)
+      (update-in [:position] #(assoc-in %1 to (get-in %1 from)))
+      (update-in [:position] #(assoc-in %1 from nil))))

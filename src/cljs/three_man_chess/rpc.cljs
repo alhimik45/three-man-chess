@@ -27,13 +27,8 @@
   (mkremote 'three-man-chess.api/connect-to-game state error loading))
 
 (def move
-  (mkremote 'three-man-chess.api/move (cell nil) (cell nil) (cell nil)))
+  (mkremote 'three-man-chess.api/move state error loading))
 
-(defn game-loop [game-id player-id pos last-move turn avail-players me]
+(defn game-loop [game-id player-id]
   (get-state game-id player-id)
-  (js/setInterval #(get-state game-id player-id) 3000)
-  (cell= (reset! @pos (:position state)))
-  (cell= (reset! @last-move (:last-move state)))
-  (cell= (reset! me (:num state)))
-  (cell= (reset! turn (:turn state)))
-  (cell= (reset! avail-players (:avail-players state))))
+  (js/setInterval #(get-state game-id player-id) 3000))

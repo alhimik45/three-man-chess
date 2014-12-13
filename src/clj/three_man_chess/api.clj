@@ -37,6 +37,13 @@
    :players []
    :last-touch (days)})
 
+(defn result-answer [game-id player-id]
+  (merge (get-in @matches [game-id :game-data])
+         {:num
+          (if (some #{player-id} (get-in @matches [game-id :players]))
+            (.indexOf (get-in @matches [game-id :players]) player-id)
+            -1)}))
+
 (defrpc new-game []
   (let [game-id (rand-id)]
     (swap! matches assoc game-id (new-match-data))
@@ -55,11 +62,7 @@
 
 (defrpc get-state [game-id player-id]
   {:rpc/pre [(get @matches game-id)]}
-  (merge (get-in @matches [game-id :game-data])
-         {:num
-          (if (some #{player-id} (get-in @matches [game-id :players]))
-            (.indexOf (get-in @matches [game-id :players]) player-id)
-            -1)}))
+  (result-answer game-id player-id))
 
 (defrpc move [game-id player-id [from to]]
   {:rpc/pre [(get @matches game-id)]}
@@ -71,15 +74,11 @@
                     (get-in @matches [game-id :game-data :turn]))
                  (move/possible? all-sectors position turn from to))
       (throw (Exception. "Impossible move"))
-      (swap! matches
-             (fn [m]
-               (-> m
-                   (assoc-in [game-id :last-touch] (days))
-                   (assoc-in [game-id :game-data :last-move] [from to])
-                   (update-in [game-id :game-data]
-                              (fn [game-data]
-                                (-> game-data
-                                    (game/check-king-captured from to)
-                                    (game/next-turn)
-                                    (update-in [:position] #(assoc-in %1 to (get-in %1 from)))
-                                    (update-in [:position] #(assoc-in %1 from nil)))))))))))
+      (do
+        (swap! matches
+                 (fn [m]
+                   (-> m
+                       (assoc-in [game-id :last-touch] (days))
+                       (assoc-in [game-id :game-data :last-move] [from to])
+                       (update-in [game-id :game-data] game/player-move from to))))
+        (result-answer game-id player-id)))))

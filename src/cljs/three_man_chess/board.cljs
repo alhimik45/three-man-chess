@@ -1,6 +1,7 @@
 (ns three-man-chess.board
   (:require [monet.canvas :as canvas]
-            [three-man-chess.move :as move])
+            [three-man-chess.move :as move]
+            [three-man-chess.rpc :as rpc])
   (:require-macros
    [tailrecursion.javelin :refer [defc defc= cell= dosync]]
    [three-man-chess.event :refer [declare-event-cell]]))
@@ -11,15 +12,13 @@
 (defc selected-cell [])
 (defc hovered-cell [])
 (defc possible-moves-cell [])
-(defc last-move-cell [])
-(def last-move-atom (atom last-move-cell))
+(defc= last-move-cell (:last-move rpc/state))
 
 (declare-event-cell move-cell [])
 ;(declare-event-cell win-cell nil)
 
 
-(defc position (repeat 4 (repeat 24 nil)))
-(def pos-atom (atom position))
+(defc= position (:position rpc/state))
 (def chess-pieces (atom {}))
 (def pieces-count (atom 0))
 (def pieces-loaded (atom 0)) ;must be equal pieces-count when all images loaded
@@ -42,9 +41,9 @@
              :last-move "#f00"
              :hovered "#ff0"})
 
-(def available-players (atom (range 0 players)))
-(def turn (atom 0)) ;who makes move now
-(def me (atom 0))
+(defc= available-players (:avail-players rpc/state))
+(defc= turn (:turn rpc/state)) ;who makes move now
+(defc= me (:num rpc/state))
 
 (defn change-scale! [new-scale]
   (reset! scale-num new-scale))
@@ -211,11 +210,6 @@
              (move/possible? all-sectors @position @turn from to))
     (reset! move-cell [from to])))
 
-(defn do-move [[from to]]
-  (dosync
-   (swap! position #(assoc-in %1 to (get-in %1 from)))
-   (swap! position #(assoc-in %1 from nil))))
-
 (defn highlight-possible-moves [from]
   (dosync
    (reset! possible-moves-cell [])
@@ -312,6 +306,5 @@
            (draw-cell ctx circle-number sector-number))
          (draw-special-cells ctx [[:last-move last-move-cell] [:possible possible-moves-cell] [:selected selected-cell] [:hovered hovered-cell]])
          (draw-pieces ctx position))))))
-(add-to-move-cell-listeners! do-move)
 ;; (add-to-win-cell-listeners! (fn [player] (js/alert (str player " win!"))))
 (init-chess-pieces)

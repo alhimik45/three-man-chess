@@ -8,9 +8,7 @@
 (defn init-game [game-id player-id]
   (add-initfn! board/init-board)
   (board/add-to-move-cell-listeners! #(rpc/move game-id player-id %))
-  (rpc/game-loop game-id player-id  ;ids
-                 board/pos-atom board/last-move-atom  ;atoms with cells
-                 board/turn board/available-players board/me))  ;atoms
+  (rpc/game-loop game-id player-id))
 
 (match
  [page/params]
