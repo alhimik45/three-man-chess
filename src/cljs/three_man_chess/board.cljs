@@ -4,7 +4,8 @@
             [three-man-chess.rpc :as rpc])
   (:require-macros
    [tailrecursion.javelin :refer [defc defc= cell= dosync]]
-   [three-man-chess.event :refer [declare-event-cell]]))
+   [three-man-chess.event :refer [declare-event-cell]]
+   [three-man-chess.util :refer [with-local-vars var-get var-set]]))
 
 (defn log [& x]
   (.log js/console (str x)))
@@ -127,10 +128,18 @@
   [x y]
   [(circle x y) (sector x y)])
 
+(defn first-match [priorities test-set result-map]
+  (loop [coll (next priorities)
+         value (first priorities)]
+    (when-not (nil? value)
+      (if (test-set value)
+        (get result-map value)
+        (recur (next coll) (first coll))))))
+
 (defn draw-cell
   "Draw single cell of board"
-  ([ctx circle-number sector-number] (draw-cell ctx circle-number sector-number :normal))
-  ([ctx circle-number sector-number state]
+  ([ctx circle-number sector-number] (draw-cell ctx circle-number sector-number #{:normal}))
+  ([ctx circle-number sector-number states]
    (canvas/begin-path ctx)
    (let [coordinates (get-cell-coordinates circle-number sector-number)]
      (apply canvas/move-to ctx (first coordinates))
@@ -141,27 +150,30 @@
    (canvas/fill-style ctx
                       (cond
                        (and (odd? (+ circle-number sector-number))
-                            (= state :possible))                    (:light-selected-cell colors)
+                            (states :possible))                     (:light-selected-cell colors)
                        (odd? (+ circle-number sector-number))       (:light-cell colors)
-                       (= state :possible)                          (:dark-selected-cell colors)
+                       (states :possible)                           (:dark-selected-cell colors)
                        :else                                        (:dark-cell colors)))
-   (canvas/stroke-style ctx (get colors state))
+   (canvas/stroke-style ctx (first-match [:hovered :selected :possible :last-move :normal] states colors))
    (canvas/stroke-width ctx
-                        (case state
-                          :normal 1
-                          (scale 0.014)))
+                        (cond
+                          (states :normal) 1
+                          :else (scale 0.014)))
    (canvas/fill ctx)
    (canvas/stroke ctx)))
 
 (defn draw-special-cells
-  "Draws selected and hovered cells"
+  "Draws cells, that must be specially highlighted"
   [ctx cells]
-  (doseq [[state cell] cells]
-    (when-not (= cell [])
-      (if (every? coll? cell)
-        (doseq [cell-value cell]
-          (apply draw-cell ctx (concat cell-value [state])))
-        (apply draw-cell ctx (concat cell [state]))))))
+  (with-local-vars [result {}]
+    (doseq [[state cell] cells]
+      (when-not (= cell [])
+        (if (some coll? cell)
+          (doseq [cell-value cell]
+            (var-set result (update-in (var-get result) [cell-value] conj state)))
+          (var-set result  (update-in (var-get result) [cell] conj state)))))
+    (doseq [[cell states] (var-get result)]
+      (apply draw-cell ctx (concat cell [(set states)])))))
 
 (defn draw-piece
   "Draws single piece."
