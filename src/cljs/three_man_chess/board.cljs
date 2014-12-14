@@ -157,8 +157,8 @@
    (canvas/stroke-style ctx (first-match [:hovered :selected :possible :last-move :normal] states colors))
    (canvas/stroke-width ctx
                         (cond
-                          (states :normal) 1
-                          :else (scale 0.014)))
+                         (states :normal) 1
+                         :else (scale 0.014)))
    (canvas/fill ctx)
    (canvas/stroke ctx)))
 
@@ -188,6 +188,17 @@
                                            :w (scale 0.128)
                                            :h (scale 0.128)})))
 
+(defn draw-message
+  "Draws message about win or lose"
+  [ctx me available-players]
+  (canvas/font-style ctx (str (scale 0.15) "px sans-serif"))
+  (canvas/fill-style ctx "#000")
+  (let [x (scale 0.66) y (scale 1)]
+    (if ((set available-players) me)
+      (when (= (count available-players) 1)
+        (canvas/text ctx {:x x :y y :text "You win"}))
+      (canvas/text ctx {:x x :y y :text "You lose"}))))
+
 (defn draw-pieces
   "Draws chess pieces"
   [ctx position]
@@ -196,10 +207,6 @@
           :let [piece (get-in position [circle-number sector-number])]]
     (when piece
       (draw-piece ctx circle-number sector-number piece))))
-
-;; (defn check-win [position]
-;;   (when (= (count @available-players) 1)
-;;     (reset! win-cell (first @available-players))))
 
 (defn change-cell!
   "Set cell to circular coordinates"
@@ -317,6 +324,6 @@
                  sector-number (range 0 all-sectors)]
            (draw-cell ctx circle-number sector-number))
          (draw-special-cells ctx [[:last-move last-move-cell] [:possible possible-moves-cell] [:selected selected-cell] [:hovered hovered-cell]])
-         (draw-pieces ctx position))))))
-;; (add-to-win-cell-listeners! (fn [player] (js/alert (str player " win!"))))
+         (draw-pieces ctx position)
+         (draw-message ctx me available-players))))))
 (init-chess-pieces)
