@@ -2,7 +2,6 @@
 
 A multiplayer app using clojure framework [Hoplon][1]
 
-Running example: [https://three-man-chess.herokuapp.com/][3]
 
 ## Usage
 
@@ -20,4 +19,3 @@ Copyright © 2014, **Alexey Kolpakov**
 
 [1]: http://hoplon.io/
 [2]: http://localhost:8000
-[3]: https://three-man-chess.herokuapp.com/
